@@ -1,0 +1,43 @@
+﻿<Window x:Class="ValorantKillsChallenge.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ValorantKillsChallenge"
+        mc:Ignorable="d"
+        Title="Valorant Range Challenge" Height="300" Width="500">
+    <Window.Resources>
+        <local:IntToStringConverter x:Key="IntToString"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Grid.Column="0" Name="outputstacky" Background="Black"/>
+
+        <StackPanel Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">
+            <DockPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Label HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18">Kills:</Label>
+                <TextBlock Text="{Binding Path=KillCount, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource IntToString}}" VerticalAlignment="Center" FontSize="18"></TextBlock>
+            </DockPanel>
+            <Button Click="Button_Click" Name="startbutton" Width="50">Start</Button>
+            <DockPanel HorizontalAlignment="Left" Margin="85,0,0,0">
+                <Label>Timer:</Label>
+                <TextBlock Name="timerOutput" VerticalAlignment="Center">00.00s</TextBlock>
+            </DockPanel>
+            <TextBlock HorizontalAlignment="Center" Name="resultOutput" VerticalAlignment="Center"></TextBlock>
+            <Button Margin="0,20,0,0" Click="Button_Click_1" Width="50">kill test</Button>
+            
+            <DockPanel Margin="0,10,0,0" HorizontalAlignment="Center">
+                <Label>Hotkey:</Label>
+                <Button Name="recordHotkeySet" ToolTip="Click to set" Click="recordHotkeySet_Click" Width="60" Height="20">None</Button>
+            </DockPanel>
+        </StackPanel>
+    </Grid>
+    
+</Window>
