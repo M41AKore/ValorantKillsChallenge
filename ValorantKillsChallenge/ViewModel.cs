@@ -10,6 +10,7 @@ namespace ValorantKillsChallenge
     public class ViewModel : INotifyPropertyChanged
     {
         private int killCount = 0;
+        private string challengeSeconds;
 
         public int KillCount
         {
@@ -20,7 +21,15 @@ namespace ValorantKillsChallenge
                 NotifyPropertyChanged("KillCount");
             }
         }
-
+        public string ChallengeSeconds
+        {
+            get => challengeSeconds;
+            set
+            {
+                challengeSeconds = value;
+                NotifyPropertyChanged("ChallengeSeconds");
+            }
+        }
 
         private void NotifyPropertyChanged(string info)
         {

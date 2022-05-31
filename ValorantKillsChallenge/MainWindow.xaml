@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ValorantKillsChallenge"
         mc:Ignorable="d"
-        Title="Valorant Range Challenge" Height="300" Width="500">
+        Title="Valorant Range Challenge" Height="250" Width="500" Topmost="True"
+        Closing="Window_Closing">
     <Window.Resources>
         <local:IntToStringConverter x:Key="IntToString"/>
     </Window.Resources>
@@ -37,6 +38,11 @@
                 <Label>Hotkey:</Label>
                 <Button Name="recordHotkeySet" ToolTip="Click to set" Click="recordHotkeySet_Click" Width="60" Height="20">None</Button>
             </DockPanel>
+            <DockPanel HorizontalAlignment="Center">
+                <Label>Timelimit:</Label>
+                <TextBox Text="{Binding ChallengeSeconds}" Width="50" Height="20"></TextBox>
+            </DockPanel>
+
         </StackPanel>
     </Grid>
     
