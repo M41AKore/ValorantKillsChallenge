@@ -26,13 +26,13 @@
                 <Label HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18">Kills:</Label>
                 <TextBlock Text="{Binding Path=KillCount, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource IntToString}}" VerticalAlignment="Center" FontSize="18"></TextBlock>
             </DockPanel>
-            <Button Click="Button_Click" Name="startbutton" Width="50">Start</Button>
+            <Button Click="clickStartChallenge" Name="startbutton" Width="50">Start</Button>
             <DockPanel HorizontalAlignment="Left" Margin="85,0,0,0">
                 <Label>Timer:</Label>
                 <TextBlock Name="timerOutput" VerticalAlignment="Center">00.00s</TextBlock>
             </DockPanel>
             <TextBlock HorizontalAlignment="Center" Name="resultOutput" VerticalAlignment="Center"></TextBlock>
-            <Button Margin="0,20,0,0" Click="Button_Click_1" Width="50">kill test</Button>
+            <Button Margin="0,20,0,0" Click="clickKillTest" Width="50">kill test</Button>
             
             <DockPanel Margin="0,10,0,0" HorizontalAlignment="Center">
                 <Label>Hotkey:</Label>

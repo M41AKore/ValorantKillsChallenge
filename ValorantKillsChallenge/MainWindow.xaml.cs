@@ -1,23 +1,18 @@
-﻿using GameOverlay.Drawing;
-using GameOverlay.Windows;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Media;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using Button = System.Windows.Controls.Button;
 using Path = System.IO.Path;
-using TextBox = System.Windows.Controls.TextBox;
 
 namespace ValorantKillsChallenge
 {
@@ -31,25 +26,24 @@ namespace ValorantKillsChallenge
         private static int lastLineCount = 0;
         const string SETTINGS_PATH = "./Settings.xml";
 
-        private static string animBluePrintLogLine = "AnimBlueprintLog: Warning: SLOTNODE: 'FullBody' in animation instance class TP_Core_AnimGraph_v2_C already exists.";
-        private static string dmgHandlerPart = "LogDamageHandlerComponent";
-        private static string trainingBotPart = "TrainingBot";
+        private string animBluePrintLogLine; // = "LogInventory: Warning: Changing equippable for remote client to something in the past: [Current] null [Next] TrainingBotBasePistol_C_"; 
+        // AnimBlueprintLog: Warning: SLOTNODE: 'FullBody' in animation instance class TP_Core_AnimGraph_v2_C already exists.";
+        //private static string dmgHandlerPart = "LogDamageHandlerComponent";
+        //private static string trainingBotPart = "TrainingBot";
 
         public ViewModel viewModel;
-
+        Settings currentSettings;
+        Keys currentHotkey;
         KeyboardHook hook = new KeyboardHook();
         private bool registeredHotkey = false;
+        SoundPlayer soundPlayer;
+        //Overlay currentOverlay;
 
         bool firstReadDone = false;
         Task? currentTask = null;
         TimeSpan timeleft = TimeSpan.Zero;
         bool stopped = false;
 
-        Overlay currentOverlay;
-        SoundPlayer soundPlayer;
-
-        Settings currentSettings;
-        Keys currentHotkey;
 
         public MainWindow()
         {
@@ -71,54 +65,57 @@ namespace ValorantKillsChallenge
                 {
                     ChallengeLength = 60f,
                     Hotkey = Keys.F5,
+                    KillRegMatchString = "LogInventory: Warning: Changing equippable for remote client to something in the past: [Current] null [Next] TrainingBotBasePistol_C_",
                 };
                 XmlSerializer.serializeToXml(currentSettings, SETTINGS_PATH);
             }
 
-            viewModel.ChallengeSeconds = currentSettings.ChallengeLength.ToString();
-
-            registerChallengeHotkey(currentSettings.Hotkey);
-
-            run();
-
-            soundPlayer = new SoundPlayer("./timer_over.wav");
-            
-            /*GameOverlay.TimerService.EnableHighPrecisionTimers();
-
-            using (currentOverlay = new Overlay())
+            if(viewModel != null && currentSettings != null)
             {
-                currentOverlay.Run();
-            } */
-        }
+                viewModel.ChallengeSeconds = currentSettings.ChallengeLength.ToString();
+                animBluePrintLogLine = currentSettings.KillRegMatchString;
+                registerChallengeHotkey(currentSettings.Hotkey);
+                soundPlayer = new SoundPlayer("./timer_over.wav");
 
-        private void Button_Click(object sender, RoutedEventArgs e) => startChallenge();
-        private void Button_Click_1(object sender, RoutedEventArgs e) => viewModel.KillCount++;
-        private void Btn_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            var btn = sender as Button;
-            if (btn != null)
-            {
-                btn.KeyUp -= Btn_KeyDown;
-                btn.Content = e.Key.ToString();
+                run();
+
+                /*GameOverlay.TimerService.EnableHighPrecisionTimers();
+
+                using (currentOverlay = new Overlay())
+                {
+                    currentOverlay.Run();
+                } */
             }
-
-            hook.UnregisterHotkeys(); //gets rid of previous hotkey
-            Keys newhotKey = (Keys)KeyInterop.VirtualKeyFromKey(e.Key);
-            registerChallengeHotkey(newhotKey);
         }
+
+        private void clickStartChallenge(object sender, RoutedEventArgs e) => startChallenge();
+        private void clickKillTest(object sender, RoutedEventArgs e) => viewModel.KillCount++;    
         private void recordHotkeySet_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;
             if (btn != null)
             {
                 btn.Content = "press key";
-                btn.KeyUp += Btn_KeyDown;
+                btn.KeyUp += clickedAssignKey;
             }
+        }
+        private void clickedAssignKey(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            var btn = sender as Button;
+            if (btn != null)
+            {
+                btn.KeyUp -= clickedAssignKey;
+                btn.Content = e.Key.ToString();
+            }
+
+            hook.UnregisterHotkeys(); //gets rid of previous hotkey
+            var newhotKey = (Keys)KeyInterop.VirtualKeyFromKey(e.Key);
+            registerChallengeHotkey(newhotKey);
         }
 
         private void run()
         {   
-            var t = Task.Run(() =>
+            Task.Run(() =>
             {
                 while (true)
                 {
@@ -140,7 +137,7 @@ namespace ValorantKillsChallenge
                                         Instance.Dispatcher.Invoke(() =>
                                         {
                                             if (outputstacky.Children.Count > 10) outputstacky.Children.Clear();
-                                            outputstacky.Children.Add(new TextBox() { Text = "BOT KILL DETECTED!", Foreground = Brushes.Green, Background = Brushes.Black });
+                                            outputstacky.Children.Add(addLogOutput("BOT KILL DETECTED!"));
                                             viewModel.KillCount++;
                                         });
                                     }
@@ -153,12 +150,16 @@ namespace ValorantKillsChallenge
                     }
                     catch (Exception ex)
                     {
-                        Instance.Dispatcher.Invoke(() => outputstacky.Children.Add(new TextBox() { Text = ex.Message }));
+                        if(outputstacky.Children.Count > 10) outputstacky.Children.Clear();
+                        Instance.Dispatcher.Invoke(() => outputstacky.Children.Add(addLogOutput(ex.Message)));
                     }
                     Thread.Sleep(200); // ~5x per second
                 }
             });
         }
+
+        private TextBlock addLogOutput(string msg) => new TextBlock() { Text = msg, Foreground = Brushes.Green, Background = Brushes.Black };
+
         public IEnumerable<string> ReadLines(Func<Stream> streamProvider, Encoding encoding)
         {
             using (var stream = streamProvider())
@@ -171,6 +172,7 @@ namespace ValorantKillsChallenge
                 }
             }
         }
+        
         private void startChallenge()
         {
             if(startbutton.Content == "Stop")
@@ -209,11 +211,11 @@ namespace ValorantKillsChallenge
                 if(soundPlayer != null) soundPlayer.PlaySync();
             });
         }
+        
         public void registerChallengeHotkey(Keys newhotKey)
         {
-            // register the event that is fired after the key press.
             if (!registeredHotkey) hook.KeyPressed += new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
-            // register the control + alt + F12 combination as hot key.
+
             hook.RegisterHotKey(ModifierKeys.None, (Keys)newhotKey); //ModifierKeys.Control | ModifierKeys.Alt, Keys.F12
             registeredHotkey = true;
             recordHotkeySet.Content = newhotKey.ToString();

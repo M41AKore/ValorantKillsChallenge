@@ -17,5 +17,8 @@ namespace ValorantKillsChallenge
 
         [XmlElement("ChallengeLength")]
         public float ChallengeLength { get; set; }
+
+        [XmlElement("KillRegMatchString")]
+        public string KillRegMatchString { get; set; }
     }
 }
